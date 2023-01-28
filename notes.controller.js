@@ -1,5 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
+const chalk = require("chalk");
 
 const notesPath = path.join(__dirname, "db.json");
 
@@ -15,17 +16,39 @@ async function addNote(title) {
 
   // const buffer = await fs.readFile(notesPath);
   // const notes = Buffer.from(buffer).toString("utf-8");
-
+  console.log(chalk.bgGreen("Заметка была добавлена!"));
 }
-
-addNote("Test!");
 
 async function getNotes() {
   const notes = await fs.readFile(notesPath, { encoding: "utf-8" });
   return Array.isArray(JSON.parse(notes)) ? JSON.parse(notes) : [];
 }
 
+async function printNotes() {
+  const notes = await getNotes();
+  console.log(chalk.bgBlue("Вот список заметок:"));
+  notes.forEach((note) => {
+    console.log(chalk.greenBright(`ID:${note.id}, "${note.title}"`));
+  });
+}
+
+async function removeNote(id) {
+  const notes = await getNotes();
+  if (notes.length > 0) {
+    const newNotesList = notes.filter((note) => {
+      if (note.id === id) {
+        console.log(chalk.bgRed(`"Заметка: '${note.title}' - была удалена!"`));
+      }
+      return note.id !== id;
+    });
+    await fs.writeFile(notesPath, JSON.stringify(newNotesList));
+  } else {
+    console.log(chalk.bgRed("Вы ещё не создали заметку!"));
+  }
+}
+
 module.exports = {
   addNote,
-  getNotes,
+  printNotes,
+  removeNote,
 };
